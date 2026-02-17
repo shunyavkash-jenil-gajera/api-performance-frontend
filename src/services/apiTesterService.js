@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = "https://api-performance-backend.onrender.com";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export async function testApiRequest(payload) {
   const { data } = await axios.post(`${API_BASE_URL}/test`, payload, {

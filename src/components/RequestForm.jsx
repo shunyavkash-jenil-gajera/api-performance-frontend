@@ -121,13 +121,6 @@ export default function RequestForm({
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
-        {version === "v2" ? (
-          <div className="rounded-md border border-amber-700/60 bg-amber-900/20 p-2 text-xs leading-relaxed text-amber-200">
-            if you are an api that requires cors, make sure to whitelist
-            "https://api-performance-frontend.vercel.app" in your backend CORS
-            configuration. code pen makes requests from this domain.
-          </div>
-        ) : null}
         <form className="space-y-3" onSubmit={handleSubmit}>
           <div className="grid grid-cols-12 gap-2">
             <Select value={method} onValueChange={setMethod}>
@@ -253,6 +246,28 @@ export default function RequestForm({
             <p className="text-xs text-red-400">{formError}</p>
           ) : null}
         </form>
+
+        {version === "v2" && (
+          <div className="rounded-md border border-amber-700/60 bg-amber-900/20 p-2 text-xs leading-relaxed text-amber-200">
+            If you are using an API that requires CORS, make sure to whitelist{" "}
+            <span className="font-semibold">
+              https://api-performance-frontend.vercel.app
+            </span>{" "}
+            in your backend CORS configuration. This tool makes requests from
+            this domain.
+          </div>
+        )}
+
+        {version === "v1" && (
+          <div className="rounded-md border border-blue-700/60 bg-blue-900/20 p-2 text-xs leading-relaxed text-blue-200">
+            <span className="font-semibold">Important:</span> This tool works
+            only with live/public URLs. <br />
+            Localhost URLs will not work. <br />
+            If you want to test a local server, first expose it using GitHub
+            port forwarding or a tunneling service (like ngrok), then use the
+            generated public URL in this tool.
+          </div>
+        )}
       </CardContent>
     </Card>
   );

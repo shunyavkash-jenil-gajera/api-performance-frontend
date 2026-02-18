@@ -38,6 +38,7 @@ export default function RequestForm({
     bearerToken: "",
     username: "",
     password: "",
+    cookie: "",
   });
   const [formError, setFormError] = useState("");
 
@@ -129,6 +130,8 @@ export default function RequestForm({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="GET">GET</SelectItem>
+                <SelectItem value="HEAD">HEAD</SelectItem>
+                <SelectItem value="OPTIONS">OPTIONS</SelectItem>
                 <SelectItem value="POST">POST</SelectItem>
                 <SelectItem value="PUT">PUT</SelectItem>
                 <SelectItem value="PATCH">PATCH</SelectItem>

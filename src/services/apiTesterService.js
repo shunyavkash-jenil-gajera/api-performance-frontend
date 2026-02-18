@@ -58,6 +58,7 @@ async function testApiRequestDirect(payload) {
   const startedAt = performance.now();
   const headers = pairsToObject(payload.headers);
   applyAuthHeader(headers, payload.auth);
+  const withCredentials = payload.auth?.type === "cookie";
 
   if (
     payload.method !== "GET" &&
@@ -74,6 +75,7 @@ async function testApiRequestDirect(payload) {
       params: pairsToObject(payload.params),
       headers,
       data: payload.method === "GET" ? undefined : payload.body,
+      withCredentials,
       timeout: REQUEST_TIMEOUT_MS,
     });
 

@@ -16,6 +16,7 @@ export default function AuthSection({ auth, onChange }) {
           <SelectItem value="none">None</SelectItem>
           <SelectItem value="bearer">Bearer Token</SelectItem>
           <SelectItem value="basic">Basic Auth</SelectItem>
+          <SelectItem value="cookie">Cookie</SelectItem>
         </SelectContent>
       </Select>
 
@@ -44,6 +45,15 @@ export default function AuthSection({ auth, onChange }) {
             onChange={(event) => update({ password: event.target.value })}
           />
         </div>
+      ) : null}
+
+      {auth.type === 'cookie' ? (
+        <Input
+          className="h-8 border-slate-700 bg-slate-950 text-xs"
+          placeholder="session=abc123; theme=dark"
+          value={auth.cookie}
+          onChange={(event) => update({ cookie: event.target.value })}
+        />
       ) : null}
     </div>
   )

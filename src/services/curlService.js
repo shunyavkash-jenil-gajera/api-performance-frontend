@@ -52,13 +52,22 @@ export function generateCurlCommand(payload) {
   const headers = pairsToObject(payload.headers);
   applyAuthHeader(headers, payload.auth);
 
-  const canHaveBody = payload.method !== "GET" || payload.allowGetBody;
+  const method = String(payload.method || "GET").toUpperCase();
+  const canHaveBody = method !== "GET" || payload.allowGetBody;
 
-  if (canHaveBody && payload.body !== undefined && !headers["Content-Type"]) {
+  const hasBody =
+    canHaveBody &&
+    payload.body !== undefined &&
+    !(method === "GET" && payload.body && Object.keys(payload.body).length === 0);
+
+  if (hasBody && !headers["Content-Type"]) {
     headers["Content-Type"] = "application/json";
   }
 
-  const lines = [`curl -X ${payload.method} ${shellQuote(urlWithParams)}`];
+  const lines =
+    method === "GET"
+      ? [`curl --location ${shellQuote(urlWithParams)}`]
+      : [`curl --location -X ${method} ${shellQuote(urlWithParams)}`];
 
   Object.entries(headers).forEach(([key, value]) => {
     lines.push(`  -H ${shellQuote(`${key}: ${value ?? ""}`)}`);
@@ -68,7 +77,7 @@ export function generateCurlCommand(payload) {
     lines.push(`  --cookie ${shellQuote(payload.auth.cookie)}`);
   }
 
-  if (canHaveBody && payload.body !== undefined) {
+  if (hasBody) {
     lines.push(`  --data-raw ${shellQuote(JSON.stringify(payload.body))}`);
   }
 

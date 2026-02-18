@@ -6,6 +6,7 @@ import AuthSection from "@/components/AuthSection";
 import HeadersSection from "@/components/HeadersSection";
 import ParamsSection from "@/components/ParamsSection";
 import { isHttpUrl, normalizeHttpUrl } from "@/lib/url";
+import { parseCurlCommand } from "@/services/curlImportService";
 import { generateCurlCommand } from "@/services/curlService";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -65,6 +66,21 @@ export default function RequestForm({
       }))
       .filter((item) => item.key);
 
+  const importCurlFromText = (text) => {
+    const parsed = parseCurlCommand(text);
+    if (!parsed) return false;
+
+    setMethod(parsed.method);
+    setUrl(parsed.url || "");
+    setParams(parsed.params);
+    setHeaders(parsed.headers);
+    setAuth(parsed.auth);
+    setBodyText(parsed.bodyText);
+    setActiveTab("Body");
+    setFormError("");
+    return true;
+  };
+
   const curlCommand = useMemo(() => {
     let parsedBody;
     if (canSendBody && bodyText.trim()) {
@@ -102,9 +118,36 @@ export default function RequestForm({
     }
   };
 
+  const handleUrlChange = (event) => {
+    setUrl(event.target.value);
+  };
+
+  const handleUrlBlur = () => {
+    if (!url.trim().toLowerCase().startsWith("curl")) return;
+    importCurlFromText(url);
+  };
+
+  const handleUrlPaste = (event) => {
+    const pastedText = event.clipboardData?.getData("text") || "";
+    if (!pastedText.trim().toLowerCase().startsWith("curl")) return;
+    event.preventDefault();
+    importCurlFromText(pastedText);
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     setFormError("");
+
+    const rawInput = String(url || "").trim();
+    if (rawInput.toLowerCase().startsWith("curl")) {
+      const imported = importCurlFromText(rawInput);
+      if (imported) {
+        setFormError("cURL imported. Review fields and click Send.");
+      } else {
+        setFormError("Invalid cURL command. Please check and try again.");
+      }
+      return;
+    }
 
     const normalizedUrl = normalizeHttpUrl(url);
 
@@ -184,7 +227,9 @@ export default function RequestForm({
               placeholder="https://api.example.com/resource"
               value={url}
               list="url-history-suggestions"
-              onChange={(event) => setUrl(event.target.value)}
+              onChange={handleUrlChange}
+              onBlur={handleUrlBlur}
+              onPaste={handleUrlPaste}
             />
 
             <Button

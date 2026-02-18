@@ -1,10 +1,11 @@
 import { useMemo, useState } from "react";
-import { Loader2, Send } from "lucide-react";
+import { Check, Copy, Loader2, Send } from "lucide-react";
 import Editor from "@monaco-editor/react";
 
 import AuthSection from "@/components/AuthSection";
 import HeadersSection from "@/components/HeadersSection";
 import ParamsSection from "@/components/ParamsSection";
+import { generateCurlCommand } from "@/services/curlService";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -15,9 +16,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 
 const EMPTY_KEY_VALUE = { key: "", value: "" };
-const TAB_LIST = ["Params", "Headers", "Body", "Auth"];
+const TAB_LIST = ["Params", "Headers", "Body", "Auth", "cURL"];
 
 export default function RequestForm({
   isLoading,
@@ -41,6 +43,7 @@ export default function RequestForm({
     cookie: "",
   });
   const [formError, setFormError] = useState("");
+  const [copiedCurl, setCopiedCurl] = useState(false);
 
   const jsonError = useMemo(() => {
     if (method === "GET" || !bodyText.trim()) return "";
@@ -59,6 +62,32 @@ export default function RequestForm({
         value: item.value ?? "",
       }))
       .filter((item) => item.key);
+
+  const curlCommand = useMemo(() => {
+    let parsedBody;
+    if (method !== "GET" && bodyText.trim()) {
+      try {
+        parsedBody = JSON.parse(bodyText);
+      } catch {
+        parsedBody = undefined;
+      }
+    }
+
+    return generateCurlCommand({
+      url: url.trim(),
+      method,
+      params: normalizePairs(params),
+      headers: normalizePairs(headers),
+      auth,
+      body: parsedBody,
+    });
+  }, [url, method, params, headers, auth, bodyText]);
+
+  const copyCurl = async () => {
+    await navigator.clipboard.writeText(curlCommand);
+    setCopiedCurl(true);
+    setTimeout(() => setCopiedCurl(false), 1200);
+  };
 
   const formatJson = () => {
     try {
@@ -243,6 +272,34 @@ export default function RequestForm({
                 ) : null}
               </div>
             ) : null}
+
+            {activeTab === "cURL" ? (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs uppercase tracking-wide text-slate-400">
+                    Generated cURL Command
+                  </p>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    onClick={copyCurl}
+                  >
+                    {copiedCurl ? (
+                      <Check className="mr-1 h-3.5 w-3.5" />
+                    ) : (
+                      <Copy className="mr-1 h-3.5 w-3.5" />
+                    )}
+                    {copiedCurl ? "Copied" : "Copy cURL"}
+                  </Button>
+                </div>
+                <Textarea
+                  className="min-h-[240px] border-slate-700 bg-slate-950 font-mono text-xs"
+                  readOnly
+                  value={curlCommand}
+                />
+              </div>
+            ) : null}
           </div>
 
           {formError ? (
@@ -264,11 +321,17 @@ export default function RequestForm({
         {version === "v1" && (
           <div className="rounded-md border border-blue-700/60 bg-blue-900/20 p-2 text-xs leading-relaxed text-blue-200">
             <span className="font-semibold">Important:</span> This tool works
-            only with live/public URLs. <br />
-            Localhost URLs will not work. <br />
-            If you want to test a local server, first expose it using GitHub
-            port forwarding or a tunneling service (like ngrok), then use the
-            generated public URL in this tool.
+            only with live/public URLs. Localhost URLs will not work in Version
+            1.
+            <br />
+            <br />
+            If you want to test APIs running on your local machine, please
+            switch to{" "}
+            <span className="font-semibold">
+              Version 2 (Direct Frontend Mode)
+            </span>
+            . Version 2 allows you to test local APIs directly from your
+            frontend environment.
           </div>
         )}
       </CardContent>

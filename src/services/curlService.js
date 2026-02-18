@@ -52,7 +52,9 @@ export function generateCurlCommand(payload) {
   const headers = pairsToObject(payload.headers);
   applyAuthHeader(headers, payload.auth);
 
-  if (payload.method !== "GET" && payload.body !== undefined && !headers["Content-Type"]) {
+  const canHaveBody = payload.method !== "GET" || payload.allowGetBody;
+
+  if (canHaveBody && payload.body !== undefined && !headers["Content-Type"]) {
     headers["Content-Type"] = "application/json";
   }
 
@@ -66,7 +68,7 @@ export function generateCurlCommand(payload) {
     lines.push(`  --cookie ${shellQuote(payload.auth.cookie)}`);
   }
 
-  if (payload.method !== "GET" && payload.body !== undefined) {
+  if (canHaveBody && payload.body !== undefined) {
     lines.push(`  --data-raw ${shellQuote(JSON.stringify(payload.body))}`);
   }
 

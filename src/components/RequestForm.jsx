@@ -45,16 +45,17 @@ export default function RequestForm({
   });
   const [formError, setFormError] = useState("");
   const [copiedCurl, setCopiedCurl] = useState(false);
+  const canSendBody = method !== "GET" || version === "v1";
 
   const jsonError = useMemo(() => {
-    if (method === "GET" || !bodyText.trim()) return "";
+    if (!canSendBody || !bodyText.trim()) return "";
     try {
       JSON.parse(bodyText);
       return "";
     } catch (error) {
       return error.message;
     }
-  }, [method, bodyText]);
+  }, [canSendBody, bodyText]);
 
   const normalizePairs = (pairs) =>
     pairs
@@ -66,7 +67,7 @@ export default function RequestForm({
 
   const curlCommand = useMemo(() => {
     let parsedBody;
-    if (method !== "GET" && bodyText.trim()) {
+    if (canSendBody && bodyText.trim()) {
       try {
         parsedBody = JSON.parse(bodyText);
       } catch {
@@ -81,8 +82,9 @@ export default function RequestForm({
       headers: normalizePairs(headers),
       auth,
       body: parsedBody,
+      allowGetBody: version === "v1",
     });
-  }, [url, method, params, headers, auth, bodyText]);
+  }, [url, method, params, headers, auth, bodyText, canSendBody, version]);
 
   const copyCurl = async () => {
     await navigator.clipboard.writeText(curlCommand);
@@ -122,7 +124,7 @@ export default function RequestForm({
     }
 
     let parsedBody;
-    if (method !== "GET" && bodyText.trim()) {
+    if (canSendBody && bodyText.trim()) {
       parsedBody = JSON.parse(bodyText);
     }
 
@@ -252,9 +254,10 @@ export default function RequestForm({
                   </Button>
                 </div>
 
-                {method === "GET" ? (
+                {!canSendBody ? (
                   <p className="text-xs text-slate-400">
-                    GET requests do not include a body.
+                    GET request body is available in Version 1 (Proxy Backend)
+                    only.
                   </p>
                 ) : (
                   <Editor

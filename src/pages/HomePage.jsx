@@ -120,6 +120,26 @@ export default function HomePage() {
           </div>
         </div>
       </div>
+
+      <footer className="mt-10 border-t border-gray-800 bg-black/40 py-6 text-center text-sm text-gray-400">
+        <p>
+          This project is built by{" "}
+          <span className="font-semibold text-white">Jenil Gajera</span>.
+        </p>
+
+        <p className="mt-2">
+          To view the source code, visit the GitHub account{" "}
+          <a
+            href="https://github.com/shunyavkash-jenil-gajera"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-blue-400 hover:text-blue-300 underline"
+          >
+            shunyavakash-jenil-gajera
+          </a>
+          .
+        </p>
+      </footer>
     </div>
   );
 }

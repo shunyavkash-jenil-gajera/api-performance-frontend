@@ -1,3 +1,5 @@
+import { normalizeHttpUrl } from "@/lib/url";
+
 function shellQuote(value) {
   return `'${String(value ?? "").replace(/'/g, "'\\''")}'`;
 }
@@ -43,7 +45,10 @@ function buildUrlWithParams(url, params = []) {
 }
 
 export function generateCurlCommand(payload) {
-  const urlWithParams = buildUrlWithParams(payload.url, payload.params);
+  const urlWithParams = buildUrlWithParams(
+    normalizeHttpUrl(payload.url),
+    payload.params,
+  );
   const headers = pairsToObject(payload.headers);
   applyAuthHeader(headers, payload.auth);
 

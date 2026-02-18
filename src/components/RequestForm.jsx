@@ -5,6 +5,7 @@ import Editor from "@monaco-editor/react";
 import AuthSection from "@/components/AuthSection";
 import HeadersSection from "@/components/HeadersSection";
 import ParamsSection from "@/components/ParamsSection";
+import { isHttpUrl, normalizeHttpUrl } from "@/lib/url";
 import { generateCurlCommand } from "@/services/curlService";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -74,7 +75,7 @@ export default function RequestForm({
     }
 
     return generateCurlCommand({
-      url: url.trim(),
+      url: normalizeHttpUrl(url),
       method,
       params: normalizePairs(params),
       headers: normalizePairs(headers),
@@ -103,8 +104,15 @@ export default function RequestForm({
     event.preventDefault();
     setFormError("");
 
-    if (!url.trim()) {
+    const normalizedUrl = normalizeHttpUrl(url);
+
+    if (!normalizedUrl) {
       setFormError("URL is required.");
+      return;
+    }
+
+    if (!isHttpUrl(normalizedUrl)) {
+      setFormError("URL must be a valid http:// or https:// URL.");
       return;
     }
 
@@ -118,9 +126,10 @@ export default function RequestForm({
       parsedBody = JSON.parse(bodyText);
     }
 
+    setUrl(normalizedUrl);
     onSubmit({
       version,
-      url: url.trim(),
+      url: normalizedUrl,
       method,
       params: normalizePairs(params),
       headers: normalizePairs(headers),

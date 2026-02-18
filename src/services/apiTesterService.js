@@ -1,4 +1,5 @@
 import axios from "axios";
+import { normalizeHttpUrl } from "@/lib/url";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const REQUEST_TIMEOUT_MS = 35000;
@@ -56,6 +57,7 @@ function createDirectErrorResult(error, responseTimeMs) {
 
 async function testApiRequestDirect(payload) {
   const startedAt = performance.now();
+  const normalizedUrl = normalizeHttpUrl(payload.url);
   const headers = pairsToObject(payload.headers);
   applyAuthHeader(headers, payload.auth);
   const withCredentials = payload.auth?.type === "cookie";
@@ -70,7 +72,7 @@ async function testApiRequestDirect(payload) {
 
   try {
     const response = await axios({
-      url: payload.url,
+      url: normalizedUrl,
       method: payload.method,
       params: pairsToObject(payload.params),
       headers,
@@ -94,11 +96,16 @@ async function testApiRequestDirect(payload) {
 }
 
 export async function testApiRequest(payload) {
-  if (payload.version === "v2") {
-    return testApiRequestDirect(payload);
+  const normalizedPayload = {
+    ...payload,
+    url: normalizeHttpUrl(payload.url),
+  };
+
+  if (normalizedPayload.version === "v2") {
+    return testApiRequestDirect(normalizedPayload);
   }
 
-  const { version, ...proxyPayload } = payload;
+  const { version, ...proxyPayload } = normalizedPayload;
   const { data } = await axios.post(`${API_BASE_URL}/test`, proxyPayload, {
     timeout: REQUEST_TIMEOUT_MS,
     headers: {

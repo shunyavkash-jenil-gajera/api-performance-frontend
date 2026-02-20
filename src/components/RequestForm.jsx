@@ -36,7 +36,7 @@ export default function RequestForm({
   const [activeTab, setActiveTab] = useState("Params");
   const [params, setParams] = useState([{ ...EMPTY_KEY_VALUE }]);
   const [headers, setHeaders] = useState([{ ...EMPTY_KEY_VALUE }]);
-  const [bodyText, setBodyText] = useState("{\n  \n}");
+  const [bodyText, setBodyText] = useState("");
   const [auth, setAuth] = useState({
     type: "none",
     bearerToken: "",
